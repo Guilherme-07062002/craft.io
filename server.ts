@@ -1,4 +1,5 @@
 import { Server, IncomingMessage, ServerResponse } from 'http'
+import { parse } from 'url'
 
 export class CraftIoServer {
     private readonly server: Server
@@ -22,11 +23,15 @@ export class CraftIoServer {
      * Start the server
      */
     start() {
+        console.log('='.repeat(50))
+        console.log('Server is starting...\n');
+
         this.server.on('request', (req, res) => {
             try {
-                const handler = this.routes.get(req.url || '')
+                const parsedUrl = parse(req.url || '', true)
+                const handler = this.routes.get(parsedUrl.pathname || '')
                 if (handler) {
-                    handler(req, res)
+                    handler(req, res, parsedUrl.query as QueryParams)
                 } else {
                     this.return(res, StatusCodes.NOT_FOUND, { message: 'Endpoint not found' })
                 }
@@ -36,7 +41,7 @@ export class CraftIoServer {
         })
 
         this.server.listen(this.port, () => {
-        console.log(`Server is running on port ${this.port}`)
+        console.log(`Server is running on port \x1b[31m${this.port}\x1b[0m`)
       })
     }
 
@@ -58,4 +63,6 @@ export const StatusCodes = {
     INTERNAL_SERVER_ERROR: 500
 }
 
-export type Handler = (req: IncomingMessage, res: ServerResponse) => void
+export type Handler = (req: IncomingMessage, res: ServerResponse, query: QueryParams) => void;
+
+export type QueryParams = { [key: string]: any };
