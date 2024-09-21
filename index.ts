@@ -13,7 +13,7 @@ server.addRoute('/hello', (
     res: ServerResponse, 
     query: QueryParams
 ) => {
-    server.return(res, StatusCodes.OK, { message: `Hello, ${query.name}!` });
+    server.return(res, StatusCodes.OK, { message: `Hello, ${query.name || 'world'}!` });
 })
 
 server.start();

@@ -65,4 +65,4 @@ export const StatusCodes = {
 
 export type Handler = (req: IncomingMessage, res: ServerResponse, query: QueryParams) => void;
 
-export type QueryParams = { [key: string]: any };
+export type QueryParams = { [key: string]: string };
