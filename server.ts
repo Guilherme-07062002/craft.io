@@ -115,9 +115,9 @@ export type Handler = (
     req: IncomingMessage, 
     res: ServerResponse, 
     query: QueryParams<any>,
-    params: Params,
+    params: Params<any>,
     body: any
 ) => void;
 
-export type QueryParams<T = string> = T
-export type Params = { [key: string]: string };
+export type QueryParams<T = {}> = T
+export type Params<T = { [key: string]: any }> = T

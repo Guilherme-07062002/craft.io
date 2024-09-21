@@ -8,7 +8,7 @@ server.addRoute('/hello/:name', (
     req: IncomingMessage, 
     res: ServerResponse, 
     query: QueryParams,
-    params: Params,
+    params: Params<{ name: string }>,
     body: any
 ) => {
     server.return(res, StatusCodes.OK, { message: `Hello, ${params.name || 'world'}!` });
