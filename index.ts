@@ -17,7 +17,7 @@ server.addRoute('/hello/:name', (
 server.addRoute('/hello', (
     req: IncomingMessage, 
     res: ServerResponse, 
-    query: QueryParams
+    query: QueryParams<{ name?: string }>,
 ) => {
     server.return(res, StatusCodes.OK, { message: `Hello, ${query.name || 'world'}!` });
 })

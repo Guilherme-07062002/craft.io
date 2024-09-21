@@ -32,14 +32,14 @@ export class CraftIoServer {
             for (const [path, handler] of this.routes) {
                 if (path === pathname) {                    
                     this.parseBody(req, body => {
-                        handler(req, res, parsedUrl.query as QueryParams, {}, body);
+                        handler(req, res, parsedUrl.query, {}, body);
                     });
                     return;
                 } else if (path.includes(':')) {
                     const params = this.extractParams(path, pathname);
                     if (params) {
                         this.parseBody(req, body => {
-                            handler(req, res, parsedUrl.query as QueryParams, params, body);
+                            handler(req, res, parsedUrl.query, params, body);
                         });                        
                         return;
                     }
@@ -114,10 +114,10 @@ export const StatusCodes = {
 export type Handler = (
     req: IncomingMessage, 
     res: ServerResponse, 
-    query: QueryParams,
+    query: QueryParams<any>,
     params: Params,
     body: any
 ) => void;
 
-export type QueryParams = { [key: string]: string };
+export type QueryParams<T = string> = T
 export type Params = { [key: string]: string };
