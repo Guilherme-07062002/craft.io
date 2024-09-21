@@ -27,15 +27,20 @@ export class CraftIoServer {
         this.server.on('request', (req, res) => {
             const parsedUrl = parse(req.url || '', true);
             const pathname = parsedUrl.pathname || '';
+            const method = req.method || 'GET';
 
-            for (const [path, handler] of this.routes) { 
+            for (const [path, handler] of this.routes) {
                 if (path === pathname) {                    
-                    handler(req, res, parsedUrl.query as QueryParams, {});
+                    this.parseBody(req, body => {
+                        handler(req, res, parsedUrl.query as QueryParams, {}, body);
+                    });
                     return;
                 } else if (path.includes(':')) {
                     const params = this.extractParams(path, pathname);
                     if (params) {
-                        handler(req, res, parsedUrl.query as QueryParams, params);
+                        this.parseBody(req, body => {
+                            handler(req, res, parsedUrl.query as QueryParams, params, body);
+                        });                        
                         return;
                     }
                 }
@@ -75,10 +80,28 @@ export class CraftIoServer {
           if (pathParts[i].startsWith(':')) {
             const paramName = pathParts[i].replace(':', '') ;
             params[paramName] = routeParts[i];
-          } else if (routeParts[i] !== pathParts[i]) return null; // Não é uma correspondência válida
+          } else if (routeParts[i] !== pathParts[i]) return null;
         }
       
         return params;
+    }
+
+    
+    /**
+     * Parse the body of the request
+     */
+    parseBody(req: IncomingMessage, callback: (body: any) => void) {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+        req.on('end', () => {
+            try {
+                callback(JSON.parse(body));
+            } catch (e) {
+                callback({});
+            }
+        });
     }
 }
 
@@ -92,7 +115,8 @@ export type Handler = (
     req: IncomingMessage, 
     res: ServerResponse, 
     query: QueryParams,
-    params: Params
+    params: Params,
+    body: any
 ) => void;
 
 export type QueryParams = { [key: string]: string };
