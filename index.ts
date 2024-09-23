@@ -1,28 +1,20 @@
-import { IncomingMessage, ServerResponse } from 'http'
-
-import { CraftIoServer, StatusCodes, type Params, type QueryParams} from "./server";
+import { CraftIoServer, StatusCodes, type RouteContext} from "./server";
 
 const server = new CraftIoServer(3000);
 
-server.addRoute('/hello/:name', (
-    req: IncomingMessage, 
-    res: ServerResponse, 
-    query: QueryParams,
-    params: Params<{ name: string }>,
-    body: any
-) => {
-    server.return(res, StatusCodes.OK, { message: `Hello, ${params.name || 'world'}!` });
+server.addRoute('/hello/:name', (context: RouteContext<any, {name: string}>) => {
+    const { res, params } = context;
+    const name = params.name || 'world';
+    server.return(res, StatusCodes.OK, { message: `Hello, ${name}!` });
 })
 
-server.addRoute('/hello', (
-    req: IncomingMessage, 
-    res: ServerResponse, 
-    query: QueryParams<{ name?: string }>,
-) => {
+server.addRoute('/hello', (context: RouteContext<any, any, {name: string}>) => {
+    const { res, query } = context;
     server.return(res, StatusCodes.OK, { message: `Hello, ${query.name || 'world'}!` });
 })
 
-server.addRoute('/', (req: IncomingMessage, res: ServerResponse) => {
+server.addRoute('/', (context: RouteContext) => {
+    const { res } = context;
     server.return(res, StatusCodes.OK, { message: 'Hello, World!' });
 })
 

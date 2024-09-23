@@ -27,19 +27,18 @@ export class CraftIoServer {
         this.server.on('request', (req, res) => {
             const parsedUrl = parse(req.url || '', true);
             const pathname = parsedUrl.pathname || '';
-            const method = req.method || 'GET';
 
             for (const [path, handler] of this.routes) {
                 if (path === pathname) {                    
                     this.parseBody(req, body => {
-                        handler(req, res, parsedUrl.query, {}, body);
+                        handler({req, res, query: parsedUrl.query, params: {}, body});
                     });
                     return;
                 } else if (path.includes(':')) {
                     const params = this.extractParams(path, pathname);
                     if (params) {
                         this.parseBody(req, body => {
-                            handler(req, res, parsedUrl.query, params, body);
+                            handler({req, res, query: parsedUrl.query, params, body});
                         });                        
                         return;
                     }
@@ -72,7 +71,7 @@ export class CraftIoServer {
         const pathParts = path.split('/').filter(Boolean);
         const routeParts = route.split('/').filter(Boolean);
         
-        const params: Params = {};
+        const params: ParamsURL = {};
       
         if (pathParts.length !== routeParts.length) return null;
       
@@ -111,13 +110,14 @@ export const StatusCodes = {
     INTERNAL_SERVER_ERROR: 500
 };
 
-export type Handler = (
-    req: IncomingMessage, 
-    res: ServerResponse, 
-    query: QueryParams<any>,
-    params: Params<any>,
-    body: any
-) => void;
+export interface RouteContext<Body = any, Params = any, Query = any> {
+    req: IncomingMessage;
+    res: ServerResponse;
+    body: Body;
+    params: ParamsURL<Params>;
+    query: QueryParams<Query>;
+}
 
-export type QueryParams<T = {}> = T
-export type Params<T = { [key: string]: any }> = T
+export type Handler = (context: RouteContext) => void;
+export type QueryParams<T = { [key: string ]: any }> = T
+export type ParamsURL<T = { [key: string]: any }> = T
